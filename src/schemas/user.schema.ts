@@ -24,4 +24,6 @@ export class User {
   bookmarked?: [{ post_id: string; bookmarked: string }];
 }
 
+
+
 export const UserSchema = SchemaFactory.createForClass(User);

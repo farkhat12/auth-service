@@ -12,7 +12,6 @@ import { User, UserDocument } from 'src/schemas/user.schema';
 import { generateNumber } from 'src/helpers/generate-number';
 import { RedisClientType } from 'redis';
 import * as bcrypt from 'bcrypt';
-
 @Injectable()
 export class AuthRepo {
   constructor(

@@ -8,4 +8,5 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [ProfileController],
   providers: [ProfileService],
 })
+
 export class ProfileModule {}

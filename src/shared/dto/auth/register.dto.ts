@@ -17,7 +17,9 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Name is required' })
-  @MinLength(3)
+  @MinLength(3, {
+    message: 'Name must be longer than 3 characters',
+  })
   name: string;
 
   @IsString()
@@ -36,6 +38,13 @@ export class RegisterDto {
 }
 
 export class checkPhoneDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Name is required' })
+  @MinLength(3, {
+    message: 'Name must be longer than 3 characters',
+  })
+  name: string;
+
   @IsPhoneNumber('UZ')
   @IsDefined({ message: 'Phone number is required' })
   phone: string;

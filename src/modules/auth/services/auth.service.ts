@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { phoneFormatter } from 'src/helpers/phone-formatter';
 import { AuthRepo } from 'src/repositories/auth.repository';
@@ -15,6 +20,7 @@ import { User, UserDocument } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { setToken } from 'src/helpers/set-token';
 import { TokenService } from './token.service';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class AuthService {
@@ -23,9 +29,14 @@ export class AuthService {
     private tokenService: TokenService,
     private readonly otpService: OtpService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @Inject('REDIS_CLIENT') private readonly redis: RedisClientType,
   ) {}
   async chechPhone(data: string, res: Response) {
     const phone = phoneFormatter(data);
+    const blockedKey = `block:register_otp:${phone}`;
+    const isBlocked = await this.redis.get(blockedKey);
+    if (isBlocked)
+      throw new ForbiddenException(`You are blocked for 15 minutes`);
     await this.authRepo.checkPhone(phone);
     res.json({ message: 'Phone number is available', success: true });
   }

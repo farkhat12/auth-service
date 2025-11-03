@@ -4,7 +4,6 @@ import { TokenService } from '../auth/services/token.service';
 import { AuthRepo } from 'src/repositories/auth.repository';
 import { ChangePasswordDto } from 'src/shared/dto//profile/change-password.dto';
 import * as bcrypt from 'bcrypt';
-
 @Injectable()
 export class ProfileService {
   constructor(
@@ -17,6 +16,7 @@ export class ProfileService {
     const payload = await this.tokenService.verifyToken(accessToken, 'access');
     const user = await this.authRepo.findByPhone(payload.phone);
 
+    
     const filteredUser = {
       id: user.user_id,
       phone: user.phone,

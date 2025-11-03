@@ -6,11 +6,11 @@ import {
   MinLength,
 } from 'class-validator';
 
+
 export class loginDto {
   @IsPhoneNumber('UZ')
   @IsDefined()
   phone: string;
-
   @IsString()
   @MinLength(8)
   @IsDefined()

@@ -2,11 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.setGlobalPrefix('api');
+  const configService = app.get(ConfigService);
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,
@@ -23,6 +25,8 @@ async function bootstrap() {
       },
     }),
   );
-  await app.listen(process.env.PORT ?? 3030);
+  const port = configService.get<number>('PORT') ?? 3001;
+  await app.listen(port);
+  console.log(`🚀 Server is running on port ${port}`);
 }
 bootstrap();
