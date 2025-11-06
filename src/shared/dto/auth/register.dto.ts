@@ -12,7 +12,7 @@ import { Match } from './match.decorator';
 
 export class RegisterDto {
   @IsPhoneNumber('UZ')
-  @IsDefined({ message: 'Phone number is required' })
+  @IsDefined({ message: 'Phone number is requireddd' })
   phone: string;
 
   @IsString()
@@ -45,6 +45,11 @@ export class checkPhoneDto {
   })
   name: string;
 
+  @IsPhoneNumber('UZ')
+  @IsDefined({ message: 'Phone number is required' })
+  phone: string;
+}
+export class forgotPhoneDto {
   @IsPhoneNumber('UZ')
   @IsDefined({ message: 'Phone number is required' })
   phone: string;

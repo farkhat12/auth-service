@@ -18,6 +18,7 @@ import { VerifyOtpDto } from 'src/shared/dto/auth/register.dto';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 import { setToken } from 'src/helpers/set-token';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class OtpService {
@@ -25,6 +26,7 @@ export class OtpService {
   private readonly MAX_ATTEMPTS = 5;
   private readonly BLOCK_SECONDS = 60 * 15;
   constructor(
+    private configService: ConfigService,
     private tokenService: TokenService,
     @Inject('REDIS_CLIENT') private readonly redis: RedisClientType,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
@@ -46,7 +48,7 @@ export class OtpService {
       const { expiresAt } = JSON.parse(otpData);
       const now = new Date();
       const isOtpExpired = now > new Date(expiresAt);
-      if (!isOtpExpired) return;
+      if (!isOtpExpired) return JSON.parse(otpData).expiresAt;
     }
 
     const generatedOtp = generateNumber(6);
@@ -56,7 +58,8 @@ export class OtpService {
     const hashedOtp = await bcrypt.hash(generatedOtp, 9);
     const payload = JSON.stringify({ otp: hashedOtp, expiresAt });
     // Sending OTP service
-    return await this.redis.set(key, payload, { EX: this.BLOCK_SECONDS });
+    await this.redis.set(key, payload, { EX: this.BLOCK_SECONDS });
+    return expiresAt;
   }
 
   async verifyOtp(
@@ -66,6 +69,8 @@ export class OtpService {
   ) {
     const phone = phoneFormatter(data.phone);
     // Checking otp start
+    if (data) new NotFoundException('OTP not found');
+
     const otpKey = this.getOtpKey(phone, purpose);
     const attemptsKey = this.getAttemptsKey(phone, purpose);
 
@@ -113,8 +118,20 @@ export class OtpService {
         userData.phone,
       );
 
-      setToken(tokens.access_token, 60 * 60 * 1000, 'access', res);
-      setToken(tokens.refresh_token, 7 * 24 * 60 * 60 * 1000, 'refresh', res);
+      setToken(
+        tokens.access_token,
+        60 * 60 * 1000,
+        'access',
+        this.configService,
+        res,
+      );
+      setToken(
+        tokens.refresh_token,
+        7 * 24 * 60 * 60 * 1000,
+        'refresh',
+        this.configService,
+        res,
+      );
 
       res.json({ message: 'Successful created', success: true });
     } else if (purpose === 'reset_password_otp') {
@@ -125,7 +142,7 @@ export class OtpService {
         phone,
       );
 
-      setToken(token, 2 * 60 * 1000, 'reset_password', res);
+      setToken(token, 2 * 60 * 1000, 'reset_password', this.configService, res);
       res.json({
         message: 'You have access to change password',
         success: true,

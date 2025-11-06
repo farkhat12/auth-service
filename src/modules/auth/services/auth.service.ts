@@ -9,7 +9,7 @@ import { phoneFormatter } from 'src/helpers/phone-formatter';
 import { AuthRepo } from 'src/repositories/auth.repository';
 import {
   ChangePasswordDto,
-  checkPhoneDto,
+  forgotPhoneDto,
   RegisterDto,
 } from 'src/shared/dto/auth/register.dto';
 import { OtpService } from './otp.service';
@@ -21,10 +21,12 @@ import { Model } from 'mongoose';
 import { setToken } from 'src/helpers/set-token';
 import { TokenService } from './token.service';
 import { RedisClientType } from 'redis';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private configService: ConfigService,
     private readonly authRepo: AuthRepo,
     private tokenService: TokenService,
     private readonly otpService: OtpService,
@@ -44,11 +46,16 @@ export class AuthService {
     const phone = phoneFormatter(data.phone);
     await this.authRepo.checkPhone(phone);
     data.phone = phone;
-    await Promise.all([
+    const createdData = await Promise.all([
       this.authRepo.createUser(data),
       this.otpService.createOtp(phone, 'register_otp'),
     ]);
-    res.json({ message: `OTP sent to +${phone}`, success: true });
+
+    res.json({
+      message: `OTP sent`,
+      success: true,
+      expiresAt: createdData[1],
+    });
   }
 
   async login(data: loginDto, res: Response) {
@@ -65,17 +72,33 @@ export class AuthService {
       user.phone,
     );
 
-    setToken(tokens.access_token, 7 * 24 * 60 * 60 * 1000, 'access', res);
-    setToken(tokens.refresh_token, 60 * 60 * 1000, 'refresh', res);
+    setToken(
+      tokens.access_token,
+      7 * 24 * 60 * 60 * 1000,
+      'access',
+      this.configService,
+      res,
+    );
+    setToken(
+      tokens.refresh_token,
+      60 * 60 * 1000,
+      'refresh',
+      this.configService,
+      res,
+    );
 
     res.json({ message: 'Successful logged in', success: true });
   }
-  async forgotPassword(data: checkPhoneDto, res: Response) {
+  async forgotPassword(data: forgotPhoneDto, res: Response) {
     const phone = phoneFormatter(data.phone);
     const user = await this.userModel.findOne({ phone });
     if (!user) throw new UnauthorizedException('User not found');
-    await this.otpService.createOtp(phone, 'reset_password_otp');
-    res.json({ message: `OTP sent to +${phone}`, success: true });
+    const expiresAt = await this.otpService.createOtp(
+      phone,
+      'reset_password_otp',
+    );
+
+    res.json({ message: `OTP sent to +${phone}`, success: true, expiresAt });
   }
   async changePassword(data: ChangePasswordDto, req: Request, res: Response) {
     const resetPasswordToken = req.cookies['reset_password_token'];
@@ -113,14 +136,26 @@ export class AuthService {
       isExist.user_id,
       isExist.phone,
     );
-    setToken(tokens.refresh_token, 60 * 60 * 1000, 'refresh', res);
-    setToken(tokens.access_token, 7 * 24 * 60 * 60 * 1000, 'access', res);
+    setToken(
+      tokens.refresh_token,
+      60 * 60 * 1000,
+      'refresh',
+      this.configService,
+      res,
+    );
+    setToken(
+      tokens.access_token,
+      7 * 24 * 60 * 60 * 1000,
+      'access',
+      this.configService,
+      res,
+    );
     res.json({ message: 'tokens refreshed' });
   }
   async logout(res: Response) {
     res.clearCookie('access_token', { httpOnly: true, sameSite: 'strict' });
     res.clearCookie('refresh_token', { httpOnly: true, sameSite: 'strict' });
 
-    return { message: 'Logged out successfully' };
+    return { message: 'Logged out successfully', success: true };
   }
 }

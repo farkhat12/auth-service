@@ -3,6 +3,7 @@ import { AuthService } from './services/auth.service';
 import {
   ChangePasswordDto,
   checkPhoneDto,
+  forgotPhoneDto,
   RegisterDto,
   VerifyOtpDto,
 } from 'src/shared/dto/auth/register.dto';
@@ -41,7 +42,7 @@ export class AuthController {
 
   // ------------------ FORGOT PASSWORD ---------------- //
   @Post('forgot-password')
-  async forgotPassword(@Body() data: checkPhoneDto, @Res() res: Response) {
+  async forgotPassword(@Body() data: forgotPhoneDto, @Res() res: Response) {
     return await this.authService.forgotPassword(data, res);
   }
   // ----------------- VERIFY RESET OTP ---------------- //

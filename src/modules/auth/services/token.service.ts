@@ -67,7 +67,6 @@ export class TokenService {
         throw new UnauthorizedException('Token expired');
       }
       console.log(error);
-      
 
       // Токен жалған, криптография жылап тұр
       throw new UnauthorizedException('Invalid token');
