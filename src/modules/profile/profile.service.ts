@@ -4,19 +4,20 @@ import { TokenService } from '../auth/services/token.service';
 import { AuthRepo } from 'src/repositories/auth.repository';
 import { ChangePasswordDto } from 'src/shared/dto//profile/change-password.dto';
 import * as bcrypt from 'bcrypt';
+
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
 @Injectable()
 export class ProfileService {
   constructor(
     private tokenService: TokenService,
     private authRepo: AuthRepo,
   ) {}
-  async getProfile(req: Request, res: Response) {
-    const accessToken = req.cookies['access_token'];
-    if (!accessToken) throw new UnauthorizedException('Token not found');
-    const payload = await this.tokenService.verifyToken(accessToken, 'access');
-    const user = await this.authRepo.findByPhone(payload.phone);
+  async getProfile(req: AuthenticatedRequest, res: Response) {
+    const user = await this.authRepo.findByPhone(req?.user.phone);
 
-    
     const filteredUser = {
       id: user.user_id,
       phone: user.phone,

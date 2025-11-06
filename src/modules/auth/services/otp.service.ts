@@ -52,7 +52,7 @@ export class OtpService {
     }
 
     const generatedOtp = generateNumber(6);
-    console.log(generatedOtp);
+    console.log('otp:', generatedOtp);
 
     const expiresAt = new Date(Date.now() + 1000 * 60 * 1);
     const hashedOtp = await bcrypt.hash(generatedOtp, 9);

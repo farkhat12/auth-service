@@ -68,7 +68,6 @@ export class TokenService {
       }
       console.log(error);
 
-      // Токен жалған, криптография жылап тұр
       throw new UnauthorizedException('Invalid token');
     }
   }

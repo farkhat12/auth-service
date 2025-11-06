@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import {
   ChangePasswordDto,
@@ -10,6 +18,7 @@ import {
 import { loginDto } from 'src/shared/dto/auth/login.dto';
 import { Request, Response } from 'express';
 import { OtpService } from './services/otp.service';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -62,6 +71,7 @@ export class AuthController {
   }
 
   // ------------------- REFRESH ---------------------- //
+  @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   async refresh(
     @Req() req: Request,
