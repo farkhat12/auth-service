@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Put,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -38,10 +39,10 @@ export class ProfileController {
     return await this.profileService.changePassword(data, req, res);
   }
   // ------------ CHANGE APARTMENT STATUS -------------- //
-  @Patch('apartments/:apartmentId/status')
+  @Patch('apartments/:apartmentId')
   async changeApartmentStatus(
     @Param('apartmentId') apartmentId: string,
-    @Body('status') status: 'active' | 'archived',
+    @Query('status') status: 'active' | 'archived',
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ) {

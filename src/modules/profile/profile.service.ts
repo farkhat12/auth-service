@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -22,24 +23,29 @@ export class ProfileService {
   ) {}
   // -------------------- MY PROFILE ------------------- //
   async getProfile(req: AuthenticatedRequest, res: Response) {
-    const userId = req.user.user_id;
-    const user = await this.authRepo.findByPhone(req.user.phone);
+    try {
+      const userId = req.user.user_id;
+      const user = await this.authRepo.findByPhone(req.user.phone);
 
-    const myApartmens = await this.apartmentModel.find({ ownerId: userId });
+      const myApartmens = await this.apartmentModel.find({ ownerId: userId });
 
-    const filteredUser = {
-      id: userId,
-      phone: user.phone,
-      name: user.name,
-      createdAt: user.createdAt,
-    };
+      const filteredUser = {
+        id: userId,
+        phone: user.phone,
+        name: user.name,
+        createdAt: user.createdAt,
+      };
 
-    res.json({
-      message: 'User information',
-      success: true,
-      user: filteredUser,
-      myApartments: myApartmens,
-    });
+      res.json({
+        message: 'User information',
+        success: true,
+        user: filteredUser,
+        myApartments: myApartmens,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Unexpected error');
+    }
   }
   // ------------- CHANGE APARTMENT STATUS ------------- //
   async changeApartmentStatus(
@@ -49,6 +55,9 @@ export class ProfileService {
     res: Response,
   ) {
     try {
+      if (!['active', 'archived'].includes(status))
+        throw new BadRequestException('Invalid status value');
+
       const userId = req.user.user_id;
       const myApartment = await this.apartmentModel
         .findOne({
@@ -75,8 +84,10 @@ export class ProfileService {
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
+      throw new InternalServerErrorException('Unexpected error');
     }
   }
+  // ---------------- DELETE APARTMENT  ---------------- //
   async removeApartment(
     apartmentId: string,
     req: AuthenticatedRequest,
@@ -102,6 +113,7 @@ export class ProfileService {
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
+      throw new InternalServerErrorException('Unexpected error');
     }
   }
 
