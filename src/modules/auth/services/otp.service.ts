@@ -1,11 +1,3 @@
-import {
-  ForbiddenException,
-  GoneException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Model } from 'mongoose';
@@ -19,6 +11,14 @@ import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 import { setToken } from 'src/helpers/set-token';
 import { ConfigService } from '@nestjs/config';
+import {
+  ForbiddenException,
+  GoneException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 @Injectable()
 export class OtpService {

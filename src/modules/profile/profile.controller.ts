@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  Patch,
   Put,
   Req,
   Res,
@@ -12,7 +15,7 @@ import { Request, Response } from 'express';
 import { ChangePasswordDto } from 'src/shared/dto/profile/change-password.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: any;
 }
 
@@ -20,10 +23,12 @@ interface AuthenticatedRequest extends Request {
 @Controller('profile')
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
+  // ------------------ MY PROFILE -------------------- //
   @Get()
   async getProfile(@Req() req: AuthenticatedRequest, @Res() res: Response) {
     return await this.profileService.getProfile(req, res);
   }
+  // ---------------- CHANGE PASSWORD ----------------- //
   @Put('change-password')
   async changePassword(
     @Body() data: ChangePasswordDto,
@@ -31,5 +36,29 @@ export class ProfileController {
     @Res() res: Response,
   ) {
     return await this.profileService.changePassword(data, req, res);
+  }
+  // ------------ CHANGE APARTMENT STATUS -------------- //
+  @Patch('apartments/:apartmentId/status')
+  async changeApartmentStatus(
+    @Param('apartmentId') apartmentId: string,
+    @Body('status') status: 'active' | 'archived',
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    return await this.profileService.changeApartmentStatus(
+      apartmentId,
+      status,
+      req,
+      res,
+    );
+  }
+  // ------------ CHANGE APARTMENT STATUS -------------- //
+  @Delete('apartments/:apartmentId')
+  async removeApartment(
+    @Param('apartmentId') apartmentId: string,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    return await this.profileService.removeApartment(apartmentId, req, res);
   }
 }

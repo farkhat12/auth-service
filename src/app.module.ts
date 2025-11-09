@@ -5,11 +5,15 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProfileModule } from './modules/profile/profile.module';
+import { ApartmentsModule } from './modules/apartments/apartments.module';
+import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
 
 @Module({
   imports: [
     AuthModule,
     ProfileModule,
+    ApartmentsModule,
+    BookmarksModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

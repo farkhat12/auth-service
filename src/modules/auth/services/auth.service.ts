@@ -1,17 +1,6 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { phoneFormatter } from 'src/helpers/phone-formatter';
 import { AuthRepo } from 'src/repositories/auth.repository';
-import {
-  ChangePasswordDto,
-  forgotPhoneDto,
-  RegisterDto,
-} from 'src/shared/dto/auth/register.dto';
 import { OtpService } from './otp.service';
 import { loginDto } from 'src/shared/dto/auth/login.dto';
 import * as bcrypt from 'bcrypt';
@@ -22,6 +11,17 @@ import { setToken } from 'src/helpers/set-token';
 import { TokenService } from './token.service';
 import { RedisClientType } from 'redis';
 import { ConfigService } from '@nestjs/config';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import {
+  ChangePasswordDto,
+  forgotPhoneDto,
+  RegisterDto,
+} from 'src/shared/dto/auth/register.dto';
 
 @Injectable()
 export class AuthService {

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -20,10 +20,12 @@ export class User {
   @Prop({ required: true })
   createdAt: string;
 
-  @Prop()
-  bookmarked?: [{ post_id: string; bookmarked: string }];
+  @Prop({
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Apartment',
+    default: [],
+  })
+  bookmarks: mongoose.Types.ObjectId[];
 }
-
-
 
 export const UserSchema = SchemaFactory.createForClass(User);
