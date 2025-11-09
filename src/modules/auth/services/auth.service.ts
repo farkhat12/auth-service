@@ -71,17 +71,16 @@ export class AuthService {
       user.user_id,
       user.phone,
     );
-
     setToken(
       tokens.access_token,
-      7 * 24 * 60 * 60 * 1000,
+      60 * 60 * 1000,
       'access',
       this.configService,
       res,
     );
     setToken(
       tokens.refresh_token,
-      60 * 60 * 1000,
+      7 * 24 * 60 * 60 * 1000,
       'refresh',
       this.configService,
       res,
@@ -136,21 +135,22 @@ export class AuthService {
       isExist.user_id,
       isExist.phone,
     );
-    setToken(
-      tokens.refresh_token,
-      60 * 60 * 1000,
-      'refresh',
-      this.configService,
-      res,
-    );
+
     setToken(
       tokens.access_token,
-      7 * 24 * 60 * 60 * 1000,
+      60 * 60 * 1000,
       'access',
       this.configService,
       res,
     );
-    res.json({ message: 'tokens refreshed' });
+    setToken(
+      tokens.refresh_token,
+      7 * 24 * 60 * 60 * 1000,
+      'refresh',
+      this.configService,
+      res,
+    );
+    res.json({ message: 'Tokens refreshed' });
   }
   async logout(res: Response) {
     res.clearCookie('access_token', { httpOnly: true, sameSite: 'strict' });
