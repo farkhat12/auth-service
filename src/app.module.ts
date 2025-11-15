@@ -7,6 +7,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ApartmentsModule } from './modules/apartments/apartments.module';
 import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import path, { join } from 'path';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
@@ -14,9 +18,23 @@ import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
     ProfileModule,
     ApartmentsModule,
     BookmarksModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
+    MulterModule.register({
+      storage: diskStorage({
+        // Resolve to an absolute path for safety
+        destination: path.join(__dirname, '..', 'uploads'),
+        filename: (req, file, cb) => {
+          // Generate a unique filename (e.g., fieldname-timestamp.ext)
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const extension = path.parse(file.originalname).ext;
+          cb(null, `${file.fieldname}-${uniqueSuffix}${extension}`);
+        },
+      }),
+    }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
     }),
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     MongooseModule.forRootAsync({

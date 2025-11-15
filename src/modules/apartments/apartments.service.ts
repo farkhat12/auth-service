@@ -18,15 +18,24 @@ export class ApartmentsService {
     res.json({ message: 'Apartments', apartments: allApartments });
   }
   // -------------------- UPLOAD --------------------- //
-  async createApartment(req: AuthenticatedRequest, body: any, res: Response) {
+  async createApartment(
+    req: AuthenticatedRequest,
+    // body: any,
+    photos: Express.Multer.File[],
+    // location: any,
+    // res: Response,
+  ) {
     const userId = req.user.user_id;
+    console.log(photos);
+    // console.log(location);
 
-    const createdApartment = await this.apartmentModel.create({
-      ...body,
-      ownerId: userId,
-    });
 
-    res.json({ message: 'Uploaded' });
+    // const createdApartment = await this.apartmentModel.create({
+    //   ...body,
+    //   ownerId: userId,
+    // });
+
+    // res.json({ message: 'Uploaded' });
   }
   // -------------------- GET ONE --------------------- //
   async getOneApartmen(res: Response) {
