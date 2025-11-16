@@ -12,10 +12,9 @@ import {
 import { ApartmentsService } from './apartments.service';
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../profile/profile.controller';
-import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 
-@UseGuards(AccessTokenGuard)
 @Controller('apartments')
 export class ApartmentsController {
   constructor(private apartmentsService: ApartmentsService) {}
@@ -25,21 +24,23 @@ export class ApartmentsController {
     return await this.apartmentsService.getApartments(res);
   }
   // -------------------- UPLOAD --------------------- //
+  @UseGuards(AccessTokenGuard)
   @Post('upload')
   @UseInterceptors(FilesInterceptor('photos'))
   async createApartment(
     @Req() req: AuthenticatedRequest,
-    // @Body('details') details: any,
+    @Body('details') details: any,
     @UploadedFiles() photos: Express.Multer.File[],
-    // @Body('location') location: any,
-    // @Res()
-    // res: Response,
+    @Body('location') location: any,
+    @Res()
+    res: Response,
   ) {
     return await this.apartmentsService.createApartment(
       req,
-      // details,
+      details,
       photos,
-      // location,
+      location,
+      res,
     );
   }
   // -------------------- GET ONE --------------------- //

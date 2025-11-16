@@ -6,16 +6,28 @@ export type ApartmentDocument = Apartment & Document;
 @Schema({ timestamps: true })
 export class Apartment {
   @Prop({ required: true })
-  title: string;
+  address: string;
 
   @Prop({ required: true })
-  description: string;
+  orientiration: string;
 
   @Prop({ required: true })
   price: number;
 
   @Prop({ required: true })
-  city: string;
+  rooms: number;
+
+  @Prop({ required: true })
+  type: 'long' | 'short';
+
+  @Prop({ required: true })
+  for: string;
+
+  @Prop()
+  amenities: string;
+
+  @Prop({ required: true })
+  images: Array<string>;
 
   @Prop({
     type: String,
@@ -24,6 +36,8 @@ export class Apartment {
     required: true,
   })
   ownerId: string;
+
+
   @Prop({ default: 'active', enum: ['active', 'archived'] })
   status: string;
 }

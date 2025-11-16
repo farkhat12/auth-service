@@ -10,7 +10,9 @@ import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import path, { join } from 'path';
+import * as fs from 'fs';
 import { diskStorage } from 'multer';
+import { AuthenticatedRequest } from './modules/profile/profile.controller';
 
 @Module({
   imports: [
@@ -21,13 +23,23 @@ import { diskStorage } from 'multer';
     MulterModule.register({
       storage: diskStorage({
         // Resolve to an absolute path for safety
-        destination: path.join(__dirname, '..', 'uploads'),
+        destination: (req: any, file, cb) => {
+          const userId = req.user?.user_id;
+
+          // Папка жолы
+          const userFolder = join(process.cwd(), 'uploads', String(userId));
+
+          // Егер папка жоқ болса → ашамыз
+          if (!fs.existsSync(userFolder)) {
+            fs.mkdirSync(userFolder, { recursive: true });
+          }
+
+          cb(null, userFolder);
+        },
+
         filename: (req, file, cb) => {
-          // Generate a unique filename (e.g., fieldname-timestamp.ext)
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const extension = path.parse(file.originalname).ext;
-          cb(null, `${file.fieldname}-${uniqueSuffix}${extension}`);
+          const unique = Date.now() + '-' + file.originalname;
+          cb(null, unique);
         },
       }),
     }),

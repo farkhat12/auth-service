@@ -77,7 +77,7 @@ export class ProfileService {
         status: true,
         apartment: {
           id: apartmentId,
-          title: myApartment.title,
+          address: myApartment.address,
           status: myApartment.status,
         },
       });
