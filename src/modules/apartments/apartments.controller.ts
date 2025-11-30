@@ -4,13 +4,11 @@ import {
   Get,
   Post,
   Req,
-  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApartmentsService } from './apartments.service';
-import { Response } from 'express';
 import { AuthenticatedRequest } from '../profile/profile.controller';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
@@ -20,32 +18,29 @@ export class ApartmentsController {
   constructor(private apartmentsService: ApartmentsService) {}
   // -------------------- GET ALL --------------------- //
   @Get('')
-  async getApartments(@Res() res: Response) {
-    return await this.apartmentsService.getApartments(res);
+  async getApartments() {
+    return await this.apartmentsService.getApartments();
   }
-  // -------------------- UPLOAD --------------------- //
+  // --------------------- UPLOAD --------------------- //
   @UseGuards(AccessTokenGuard)
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('photos'))
+  @UseInterceptors(FilesInterceptor('images'))
   async createApartment(
     @Req() req: AuthenticatedRequest,
     @Body('details') details: any,
-    @UploadedFiles() photos: Express.Multer.File[],
+    @UploadedFiles() images: Express.Multer.File[],
     @Body('location') location: any,
-    @Res()
-    res: Response,
   ) {
     return await this.apartmentsService.createApartment(
       req,
       details,
-      photos,
+      images,
       location,
-      res,
     );
   }
   // -------------------- GET ONE --------------------- //
   @Post(':id')
-  async getOneApartmen(@Res() res: Response) {
-    return await this.apartmentsService.getOneApartmen(res);
+  async getOneApartmen() {
+    return await this.apartmentsService.getOneApartmen();
   }
 }

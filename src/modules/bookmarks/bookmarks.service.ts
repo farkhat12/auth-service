@@ -5,7 +5,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { AuthenticatedRequest } from './bookmarks.controller';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
@@ -20,22 +19,22 @@ export class BookmarksService {
     private apartmentModel: Model<ApartmentDocument>,
   ) {}
   // ----------------- GET ALL ------------------- //
-  async getBookmarks(req: AuthenticatedRequest, res: Response) {
+  async getBookmarks(req: AuthenticatedRequest) {
     try {
       const userId = req?.user.user_id;
       const user = await this.userModel.findOne({ user_id: userId });
       if (!user) throw new BadRequestException('hWEKND');
 
       const bookmarks = await this.apartmentModel.find({
+        status: 'active',
         _id: { $in: user.bookmarks.map((id) => new Types.ObjectId(id)) },
       });
 
-      res.json({
+      return {
         message: 'Your bookmarks',
         success: true,
-        user_id: userId,
         bookmarks: bookmarks,
-      });
+      };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
@@ -43,7 +42,7 @@ export class BookmarksService {
     }
   }
   // ----------------- ADD BOOKMARK ------------------- //
-  async addBookmark(apartmentId: string, user_id: string, res: Response) {
+  async addBookmark(apartmentId: string, user_id: number) {
     try {
       const apartment = await this.apartmentModel.findById(apartmentId);
       if (!apartment) throw new NotFoundException('Apartment not found');
@@ -58,14 +57,14 @@ export class BookmarksService {
       );
       if (isExist) throw new ConflictException('Already bookmarked');
 
-      user.bookmarks.push(new Types.ObjectId(apartmentId));
+      user.bookmarks.unshift(new Types.ObjectId(apartmentId));
       await user.save();
 
       const updated = await user.populate({
         path: 'bookmarks',
         select: 'title price photos location',
       });
-      res.json({
+      return {
         message: 'Bookmark added successfully',
         success: true,
         user: {
@@ -74,7 +73,7 @@ export class BookmarksService {
           user_id: updated.user_id,
         },
         bookmarks: updated.bookmarks,
-      });
+      };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       if (error instanceof ConflictException) throw error;
@@ -83,7 +82,7 @@ export class BookmarksService {
     }
   }
   // ---------------- REMOVE BOOKMARK ------------------ //
-  async removeBookmark(apartmentId: string, user_id: string, res: Response) {
+  async removeBookmark(apartmentId: string, user_id: number) {
     try {
       const apartment = await this.apartmentModel.findById(apartmentId);
       if (!apartment) throw new NotFoundException('Apartment not found');
@@ -108,7 +107,7 @@ export class BookmarksService {
         select: 'title price photos location',
       });
 
-      res.json({
+      return {
         message: 'Bookmark removed successfully',
         success: true,
         user: {
@@ -117,7 +116,7 @@ export class BookmarksService {
           user_id: updated.user_id,
         },
         bookmarks: updated.bookmarks,
-      });
+      };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       if (error instanceof ConflictException) throw error;

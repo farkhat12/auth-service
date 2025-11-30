@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { MulterModule } from '@nestjs/platform-express';
 import multer from 'multer';
+import { User, UserSchema } from 'src/schemas/user.schema';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import multer from 'multer';
     }),
     MongooseModule.forFeature([
       { name: Apartment.name, schema: ApartmentSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [ApartmentsController],

@@ -7,12 +7,17 @@ export type ApartmentDocument = Apartment & Document;
 export class Apartment {
   @Prop({ required: true })
   address: string;
+  @Prop({ required: true })
+  ownerName: string;
 
   @Prop({ required: true })
   orientiration: string;
 
   @Prop({ required: true })
   price: number;
+
+  @Prop({ required: true })
+  postId: number;
 
   @Prop({ required: true })
   rooms: number;
@@ -22,6 +27,9 @@ export class Apartment {
 
   @Prop({ required: true })
   for: string;
+
+  @Prop({ required: true })
+  phone: string;
 
   @Prop()
   amenities: string;
@@ -36,7 +44,6 @@ export class Apartment {
     required: true,
   })
   ownerId: string;
-
 
   @Prop({ default: 'active', enum: ['active', 'archived'] })
   status: string;

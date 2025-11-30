@@ -1,42 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Response } from 'express';
 import { Model } from 'mongoose';
 import { Apartment } from 'src/schemas/apartment.schema';
 import { AuthenticatedRequest } from '../profile/profile.controller';
 import { v2 as cloudinary } from 'cloudinary';
 import { generateNumber } from 'src/helpers/generate-number';
+import { User, UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class ApartmentsService {
   constructor(
     @InjectModel(Apartment.name) private apartmentModel: Model<Apartment>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
   // -------------------- GET ALL --------------------- //
-  async getApartments(res: Response) {
-    const allApartments = await this.apartmentModel.find({});
-
-    res.json({ message: 'Apartments', apartments: allApartments });
+  async getApartments() {
+    try {
+      const allApartments = await this.apartmentModel
+        .find({
+          status: 'active',
+        })
+        .sort({ createdAt: -1 });
+      return { message: 'Apartments', apartments: allApartments };
+    } catch (error) {
+      throw new console.log(error, 'get apartments 22');
+    }
   }
   // -------------------- UPLOAD --------------------- //
-
   async createApartment(
     req: AuthenticatedRequest,
     details: any,
-    photos: Express.Multer.File[],
+    images: Express.Multer.File[],
     location: any,
-    res: Response,
   ) {
     const info = JSON.parse(details);
-    const userId = req.user.user_id;
+    const phone = req?.user?.phone;
+
+    const user = await this.userModel.findOne({ phone });
+    if (!user)
+      throw new UnauthorizedException('Incorrect password or phone number');
+
     const postId = generateNumber(12);
     const savedFiles: Array<{ url: string; publicId: string }> = [];
-    for (const photo of photos) {
+
+    for (const photo of images) {
       const uploadResult: any = await new Promise((resolve, reject) => {
         cloudinary.uploader
           .upload_stream(
             {
-              folder: `users/${userId}/posts/${postId}`,
+              folder: `users/${user?.user_id}/posts/${postId}`,
               resource_type: 'image',
             },
             (error, result) => {
@@ -53,6 +65,7 @@ export class ApartmentsService {
     }
 
     const newApartment = await this.apartmentModel.create({
+      postId,
       address: info.address,
       orientiration: info.orientiration,
       price: info.price,
@@ -63,13 +76,15 @@ export class ApartmentsService {
       images: savedFiles,
       location: { lat: location.lat, lng: location.lng },
       status: 'active',
-      ownerId: userId,
+      ownerId: user.user_id,
+      phone: user?.phone,
+      ownerName: user?.name,
     });
 
-    return savedFiles;
+    return { message: 'Uploaded', success: true, data: newApartment };
   }
   // -------------------- GET ONE --------------------- //
-  async getOneApartmen(res: Response) {
-    res.json({ message: 'No scc' });
+  async getOneApartmen() {
+    return { message: 'No scc' };
   }
 }

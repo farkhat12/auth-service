@@ -8,11 +8,10 @@ import {
   Put,
   Query,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { ChangePasswordDto } from 'src/shared/dto/profile/change-password.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 
@@ -26,17 +25,13 @@ export class ProfileController {
   constructor(private profileService: ProfileService) {}
   // ------------------ MY PROFILE -------------------- //
   @Get()
-  async getProfile(@Req() req: AuthenticatedRequest, @Res() res: Response) {
-    return await this.profileService.getProfile(req, res);
+  async getProfile(@Req() req: AuthenticatedRequest) {
+    return await this.profileService.getProfile(req);
   }
   // ---------------- CHANGE PASSWORD ----------------- //
   @Put('change-password')
-  async changePassword(
-    @Body() data: ChangePasswordDto,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
-    return await this.profileService.changePassword(data, req, res);
+  async changePassword(@Body() data: ChangePasswordDto, @Req() req: Request) {
+    return await this.profileService.changePassword(data, req);
   }
   // ------------ CHANGE APARTMENT STATUS -------------- //
   @Patch('apartments/:apartmentId')
@@ -44,22 +39,19 @@ export class ProfileController {
     @Param('apartmentId') apartmentId: string,
     @Query('status') status: 'active' | 'archived',
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
   ) {
     return await this.profileService.changeApartmentStatus(
       apartmentId,
       status,
       req,
-      res,
     );
   }
-  // ------------ CHANGE APARTMENT STATUS -------------- //
+  // ------------------ DELETE APARTMENT ----------------- //
   @Delete('apartments/:apartmentId')
   async removeApartment(
     @Param('apartmentId') apartmentId: string,
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
   ) {
-    return await this.profileService.removeApartment(apartmentId, req, res);
+    return await this.profileService.removeApartment(apartmentId, req);
   }
 }

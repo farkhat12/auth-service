@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { TokenService } from '../auth/services/token.service';
 import { AuthRepo } from 'src/repositories/auth.repository';
 import { ChangePasswordDto } from 'src/shared/dto//profile/change-password.dto';
@@ -22,12 +22,14 @@ export class ProfileService {
     private authRepo: AuthRepo,
   ) {}
   // -------------------- MY PROFILE ------------------- //
-  async getProfile(req: AuthenticatedRequest, res: Response) {
+  async getProfile(req: AuthenticatedRequest) {
     try {
       const userId = req.user.user_id;
       const user = await this.authRepo.findByPhone(req.user.phone);
 
-      const myApartmens = await this.apartmentModel.find({ ownerId: userId });
+      const myApartmens = await this.apartmentModel
+        .find({ ownerId: userId })
+        .sort({ createdAt: -1 });
 
       const filteredUser = {
         id: userId,
@@ -36,23 +38,22 @@ export class ProfileService {
         createdAt: user.createdAt,
       };
 
-      res.json({
+      return {
         message: 'User information',
         success: true,
         user: filteredUser,
         myApartments: myApartmens,
-      });
+      };
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException('Unexpected error');
     }
   }
+
   // ------------- CHANGE APARTMENT STATUS ------------- //
   async changeApartmentStatus(
     apartmentId: string,
     status: 'active' | 'archived',
     req: AuthenticatedRequest,
-    res: Response,
   ) {
     try {
       if (!['active', 'archived'].includes(status))
@@ -71,16 +72,15 @@ export class ProfileService {
 
       myApartment.status = status;
       await myApartment.save();
-
-      res.json({
-        message: 'Status is changed',
+      return {
+        message: `Apartment is ${status === 'active' ? 'actived' : 'archived'}`,
         status: true,
         apartment: {
           id: apartmentId,
           address: myApartment.address,
           status: myApartment.status,
         },
-      });
+      };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
@@ -88,12 +88,9 @@ export class ProfileService {
     }
   }
   // ---------------- DELETE APARTMENT  ---------------- //
-  async removeApartment(
-    apartmentId: string,
-    req: AuthenticatedRequest,
-    res: Response,
-  ) {
+  async removeApartment(apartmentId: string, req: AuthenticatedRequest) {
     try {
+      if (!apartmentId) throw new BadRequestException(`Id not found`);
       const userId = req.user.user_id;
       const myApartment = await this.apartmentModel.findOne({
         ownerId: userId,
@@ -105,11 +102,11 @@ export class ProfileService {
 
       await myApartment.deleteOne();
 
-      res.json({
+      return {
         message: 'Apartment deleted successfully',
-        status: true,
+        success: true,
         apartmentId,
-      });
+      };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
@@ -118,7 +115,7 @@ export class ProfileService {
   }
 
   // ---------------- CHANGE  PASSWORD ----------------- //
-  async changePassword(data: ChangePasswordDto, req: Request, res: Response) {
+  async changePassword(data: ChangePasswordDto, req: Request) {
     const accessToken = req.cookies['access_token'];
     if (!accessToken) throw new UnauthorizedException('Token not found');
     const payload = await this.tokenService.verifyToken(accessToken, 'access');
@@ -132,6 +129,6 @@ export class ProfileService {
       throw new UnauthorizedException('Old password is incorrect');
 
     await this.authRepo.updatePassword(user.phone, data.password);
-    res.json({ message: `Password changed successfully`, success: true });
+    return { message: `Password changed successfully`, success: true };
   }
 }

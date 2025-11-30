@@ -112,7 +112,7 @@ export class OtpService {
       if (!UserData) throw new NotFoundException('Temporary user not found');
       const userData = JSON.parse(UserData);
       userData.createdAt = getFormattedDate();
-      await this.userModel.create(userData);
+      const newUser = await this.userModel.create(userData);
       const tokens = await this.tokenService.generateTokens(
         userData.user_id,
         userData.phone,
@@ -133,7 +133,16 @@ export class OtpService {
         res,
       );
 
-      res.json({ message: 'Successful created', success: true });
+      res.json({
+        message: 'Successful created',
+        success: true,
+        user: {
+          name: newUser.name,
+          phone,
+          user_id: newUser.user_id,
+          createdAt: newUser.createdAt,
+        },
+      });
     } else if (purpose === 'reset_password_otp') {
       const userData = await this.userModel.findOne({ phone });
       if (!userData) throw new NotFoundException('User not found');
